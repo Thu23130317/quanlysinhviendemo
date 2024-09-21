@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Sinh viên</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #student-form, table {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input[type="text"], input[type="number"], #search-box {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+            width: 20%;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        #search-box {
+            width: 100%;
+            max-width: 600px;
+            padding: 12px;
+            margin-top: 10px;
+            box-sizing: border-box;
+            display: block;
+            margin: 20px auto;
+            
+        }
+
+        .btn-edit {
+            background-color: #28a745;
+        }
+
+        .btn-edit:hover {
+            background-color: #218838;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .success-message {
+            text-align: center;
+            color: green;
+            margin: 10px 0;
+            background-color: #e7f9e7;
+            border: 1px solid #c3e6c3;
+            padding: 10px;
+            border-radius: 4px;
+            display: none; 
+        }
+
+        @media (max-width: 600px) {
+            #student-form, table {
+                max-width: 100%;
+                padding: 10px;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+        }
+    </style> 
+</head>
+<body>
+
+    <h1>Quản lý Sinh viên</h1>
+
+    <form id="student-form">
+        <label for="name">Tên sinh viên:</label>
+        <input type="text" id="name" name="name" placeholder="Nhập tên sinh viên" required>
+        
+        <label for="student-id">Mã số sinh viên:</label>
+        <input type="text" id="student-id" name="student-id" placeholder="Nhập mã số sinh viên" required>
+        
+        <label for="age">Năm sinh:</label>
+        <input type="number" id="age" name="age" placeholder="Nhập năm sinh" required>
+        
+        <label for="class">Lớp:</label>
+        <input type="text" id="class" name="class" placeholder="Nhập lớp" required>
+        
+        <button type="submit" id="submit-btn">Thêm Sinh viên</button>
+        <div id="success-message" class="success-message"></div>
+    </form>
+
+    <input type="text" id="search-box" placeholder="Tìm kiếm sinh viên...">
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Mã số sinh viên</th>
+                <th>Năm sinh</th>
+                <th>Lớp</th>
+                <th>Chức năng</th>
+            </tr>
+        </thead>
+        <tbody id="student-list"></tbody>
+    </table>
+
+    <script>
+        let students = [];
+        let editingIndex = null;
+
+        const studentForm = document.getElementById('student-form');
+        const studentList = document.getElementById('student-list');
+        const searchBox = document.getElementById('search-box');
+        const successMessage = document.getElementById('success-message');
+
+        studentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const studentId = document.getElementById('student-id').value.trim();
+            const age = parseInt(document.getElementById('age').value);
+            const studentClass = document.getElementById('class').value.trim();
+
+            // Kiểm tra thông tin nhập
+            if (!name) {
+                alert("Tên không được để trống!");
+                return;
+            }
+            if (!studentId) {
+                alert("Mã số sinh viên không được để trống!");
+                return;
+            }
+            if (isNaN(age) || age <= 0) {
+                alert("Năm sinh không hợp lệ!");
+                return;
+            }
+            if (!studentClass) {
+                alert("Lớp không được để trống!");
+                return;
+            }
+
+            if (editingIndex === null) {
+                // Thêm sinh viên mới
+                students.push({ name, studentId, age, class: studentClass });
+                successMessage.textContent = "Sinh viên đã được thêm thành công!";
+            } else {
+                // Cập nhật sinh viên đang chỉnh sửa
+                students[editingIndex] = { name, studentId, age, class: studentClass };
+                editingIndex = null;
+                document.getElementById('submit-btn').textContent = "Thêm Sinh viên";
+                successMessage.textContent = "Thông tin sinh viên đã được cập nhật!";
+            }
+
+            successMessage.style.display = "block"; // Hiển thị thông báo thành công
+            setTimeout(() => successMessage.style.display = "none", 3000); // Ẩn thông báo sau 3 giây
+            
+            studentForm.reset();
+            renderStudentList();
+        });
+
+        // Xóa sinh viên
+        function deleteStudent(index) {
+            students.splice(index, 1);
+            renderStudentList();
+        }
+
+        // Chỉnh sửa sinh viên
+        function editStudent(index) {
+            const student = students[index];
+            document.getElementById('name').value = student.name;
+            document.getElementById('student-id').value = student.studentId;
+            document.getElementById('age').value = student.age;
+            document.getElementById('class').value = student.class;
+            editingIndex = index;
+            document.getElementById('submit-btn').textContent = "Cập nhật Sinh viên";
+            successMessage.textContent = ""; // Xóa thông báo
+        }
+
+        // Tìm kiếm sinh viên
+        searchBox.addEventListener('input', function() {
+            renderStudentList();
+        });
+
+        // Hiển thị danh sách sinh viên
+        function renderStudentList() {
+            const searchQuery = searchBox.value.toLowerCase();
+            const filteredStudents = students.filter(student => student.name.toLowerCase().includes(searchQuery));
+
+            studentList.innerHTML = filteredStudents.length ? filteredStudents.map((student, index) => `
+                <tr>
+                    <td>${student.name}</td>
+                    <td>${student.studentId}</td>
+                    <td>${student.age}</td>
+                    <td>${student.class}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editStudent(${index})">Sửa</button>
+                        <button class="btn-delete" onclick="deleteStudent(${index})">Xóa</button>
+                    </td>
+                </tr>
+            `).join('') : `<tr><td colspan="5" style="text-align:center;">Không có sinh viên nào được tìm thấy</td></tr>`;
+        }
+    </script>
+
+</body>
+</html>
